@@ -6419,7 +6419,11 @@ __exit_set_destination_hostgroup:
 	}
 	if ( qpo->destination_hostgroup >= 0 ) {
 		if (transaction_persistent_hostgroup == -1) {
-			current_hostgroup=qpo->destination_hostgroup;
+			if ( qpo->ignorable && locked_on_hostgroup >= 0 ) {
+				current_hostgroup = locked_on_hostgroup;
+			} else {
+				current_hostgroup = qpo->destination_hostgroup;
+			}
 		}
 	}
 

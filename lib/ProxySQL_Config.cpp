@@ -537,7 +537,7 @@ int ProxySQL_Config::Read_MySQL_Query_Rules_from_configfile() {
 	int i;
 	int rows=0;
 	admindb->execute("PRAGMA foreign_keys = OFF");
-	char *q=(char *)"INSERT OR REPLACE INTO mysql_query_rules (rule_id, active, username, schemaname, flagIN, client_addr, proxy_addr, proxy_port, digest, match_digest, match_pattern, negate_match_pattern, re_modifiers, flagOUT, replace_pattern, destination_hostgroup, cache_ttl, cache_empty_result, cache_timeout, reconnect, timeout, retries, delay, next_query_flagIN, mirror_flagOUT, mirror_hostgroup, error_msg, ok_msg, sticky_conn, multiplex, gtid_from_hostgroup, log, apply, attributes, comment) VALUES (%d, %d, %s, %s, %s, %s, %s, %s, %s, %s, %s, %d, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %d, %s, %s)";
+	char *q=(char *)"INSERT OR REPLACE INTO mysql_query_rules (rule_id, active, username, schemaname, flagIN, client_addr, proxy_addr, proxy_port, digest, match_digest, match_pattern, negate_match_pattern, re_modifiers, flagOUT, replace_pattern, destination_hostgroup, cache_ttl, cache_empty_result, cache_timeout, reconnect, timeout, retries, delay, next_query_flagIN, mirror_flagOUT, mirror_hostgroup, error_msg, ok_msg, sticky_conn, multiplex, gtid_from_hostgroup, log, apply, attributes, comment, ignorable) VALUES (%d, %d, %s, %s, %s, %s, %s, %s, %s, %s, %s, %d, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %d, %s, %s, %d)";
 	for (i=0; i< count; i++) {
 		const Setting &rule = mysql_query_rules[i];
 		int rule_id;
@@ -601,6 +601,8 @@ int ProxySQL_Config::Read_MySQL_Query_Rules_from_configfile() {
 
 		int apply=0;
 
+		int ignorable=0;
+
 		// attributes
 		bool attributes_exists=false;
 		std::string attributes {};
@@ -655,6 +657,7 @@ int ProxySQL_Config::Read_MySQL_Query_Rules_from_configfile() {
 		rule.lookupValue("log", log);
 
 		rule.lookupValue("apply", apply);
+		rule.lookupValue("ignorable", ignorable);
 		if (rule.lookupValue("comment", comment)) comment_exists=true;
 		if (rule.lookupValue("attributes", attributes)) attributes_exists=true;
 
@@ -698,6 +701,7 @@ int ProxySQL_Config::Read_MySQL_Query_Rules_from_configfile() {
 			strlen(std::to_string(apply).c_str()) + 4 +
 			( attributes_exists ? strlen(attributes.c_str()) : 0 ) + 4 +
 			( comment_exists ? strlen(comment.c_str()) : 0 ) + 4 +
+			strlen(std::to_string(ignorable).c_str()) + 4 +
 			64;
 		char *query=(char *)malloc(query_len);
 		if (username_exists)
@@ -790,7 +794,8 @@ int ProxySQL_Config::Read_MySQL_Query_Rules_from_configfile() {
 			( log >= 0 ? std::to_string(log).c_str() : "NULL") ,
 			( apply == 0 ? 0 : 1) ,
 			attributes.c_str(),
-			comment.c_str()
+			comment.c_str(),
+			ignorable
 		);
 		//fprintf(stderr, "%s\n", query);
 		admindb->execute(query);

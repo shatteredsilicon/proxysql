@@ -660,6 +660,7 @@ QP_rule_t * Query_Processor::new_query_rule(int rule_id, bool active, char *user
 	newQR->regex_engine1=NULL;
 	newQR->regex_engine2=NULL;
 	newQR->hits=0;
+	newQR->ignorable=ignorable;
 
 	newQR->client_addr_wildcard_position = -1; // not existing by default
 	newQR->client_addr=(client_addr ? strdup(client_addr) : NULL);

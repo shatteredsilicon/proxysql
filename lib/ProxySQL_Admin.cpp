@@ -11918,7 +11918,7 @@ char * ProxySQL_Admin::load_mysql_query_rules_to_runtime() {
 				(atoi(r->fields[31])==1 ? true : false),
 				r->fields[32], // attributes
 				r->fields[33], // comment
-				r->fields[34]  // ignorable
+				(atoi(r->fields[34])==1 ? true : false)  // ignorable
 			);
 			GloQPro->insert(nqpr, false);
 		}

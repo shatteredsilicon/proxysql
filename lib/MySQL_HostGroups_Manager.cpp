@@ -7210,3 +7210,15 @@ MySrvC* MySQL_HostGroups_Manager::find_server_in_hg(unsigned int _hid, const std
 	return f_server;
 }
 
+void MySQL_HostGroups_Manager::add_writer_hostgroup(int _hid) {
+	MyWriterHostGroups.push_back(_hid);
+}
+
+int MySQL_HostGroups_Manager::get_writer_hostgroup() {
+	for (std::list<int>::iterator it = MyWriterHostGroups.begin(); it != MyWriterHostGroups.end(); ++it) {
+		MyHGC *myhgc = MyHGC_find(*it);
+		if (myhgc) return *it;
+	}
+
+	return -1;
+}

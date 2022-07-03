@@ -8,6 +8,7 @@
 #include <thread>
 #include <iostream>
 #include <mutex>
+#include <list>
 
 // Headers for declaring Prometheus counters
 #include <prometheus/counter.h>
@@ -364,6 +365,7 @@ class MySQL_HostGroups_Manager {
 	rwlock_t rwlock;
 #endif
 	PtrArray *MyHostGroups;
+	std::list<int> MyWriterHostGroups;
 	std::unordered_map<unsigned int, MyHGC *>MyHostGroups_map;
 
 	MyHGC * MyHGC_find(unsigned int);
@@ -642,6 +644,9 @@ class MySQL_HostGroups_Manager {
 	void shutdown();
 	void unshun_server_all_hostgroups(const char * address, uint16_t port, time_t t, int max_wait_sec, unsigned int *skip_hid);
 	MySrvC* find_server_in_hg(unsigned int _hid, const std::string& addr, int port);
+
+	void add_writer_hostgroup(int);
+	int get_writer_hostgroup();
 };
 
 #endif /* __CLASS_MYSQL_HOSTGROUPS_MANAGER_H */

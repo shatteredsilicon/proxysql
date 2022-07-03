@@ -11659,6 +11659,13 @@ void ProxySQL_Admin::load_mysql_servers_to_runtime() {
 	//if (resultset) delete resultset;
 	//resultset=NULL;
 
+	if (resultset_replication) {
+		for (std::vector<SQLite3_row *>::iterator it = resultset_replication->rows.begin(); it != resultset_replication->rows.end(); ++it) {
+			SQLite3_row *r=*it;
+			MyHGM->add_writer_hostgroup(atoi(r->fields[0]));
+		}
+	}
+
 	// support for Group Replication, table mysql_group_replication_hostgroups
 
 	// look for invalid combinations
@@ -11686,6 +11693,13 @@ void ProxySQL_Admin::load_mysql_servers_to_runtime() {
 		MyHGM->set_incoming_group_replication_hostgroups(resultset_group_replication);
 	}
 
+	if (resultset_group_replication) {
+		for (std::vector<SQLite3_row *>::iterator it = resultset_group_replication->rows.begin(); it != resultset_group_replication->rows.end(); ++it) {
+			SQLite3_row *r = *it;
+			MyHGM->add_writer_hostgroup(atoi(r->fields[0]));
+		}
+	}
+
 	// support for Galera, table mysql_galera_hostgroups
 
 	// look for invalid combinations
@@ -11711,6 +11725,13 @@ void ProxySQL_Admin::load_mysql_servers_to_runtime() {
 	} else {
 		// Pass the resultset to MyHGM
 		MyHGM->set_incoming_galera_hostgroups(resultset_galera);
+	}
+
+	if (resultset_galera) {
+		for (std::vector<SQLite3_row *>::iterator it = resultset_galera->rows.begin(); it != resultset_galera->rows.end(); ++it) {
+			SQLite3_row *r=*it;
+			MyHGM->add_writer_hostgroup(atoi(r->fields[0]));
+		}
 	}
 
 	// support for AWS Aurora, table mysql_aws_aurora_hostgroups
@@ -11743,6 +11764,14 @@ void ProxySQL_Admin::load_mysql_servers_to_runtime() {
 		// Pass the resultset to MyHGM
 		MyHGM->set_incoming_aws_aurora_hostgroups(resultset_aws_aurora);
 	}
+
+	if (resultset_aws_aurora) {
+		for (std::vector<SQLite3_row *>::iterator it = resultset_aws_aurora->rows.begin(); it != resultset_aws_aurora->rows.end(); ++it) {
+			SQLite3_row *r=*it;
+			MyHGM->add_writer_hostgroup(atoi(r->fields[0]));
+		}
+	}
+
 	// commit all the changes
 	MyHGM->commit();
 	GloAdmin->save_mysql_servers_runtime_to_database(true);

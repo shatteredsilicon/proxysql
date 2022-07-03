@@ -3061,7 +3061,9 @@ void MySQL_Session::handler___status_WAITING_CLIENT_DATA___STATE_SLEEP___MYSQL_C
 			if (locked_on_hostgroup < 0) {
 				if (lock_hostgroup) {
 					// we are locking on hostgroup now
-					locked_on_hostgroup = current_hostgroup;
+					int writer_hostgroup = MyHGM->get_writer_hostgroup();
+					locked_on_hostgroup = writer_hostgroup >= 0 ? writer_hostgroup : default_hostgroup;
+					current_hostgroup = locked_on_hostgroup;
 				}
 			}
 			if (locked_on_hostgroup >= 0) {
@@ -3227,7 +3229,9 @@ void MySQL_Session::handler___status_WAITING_CLIENT_DATA___STATE_SLEEP___MYSQL_C
 			if (locked_on_hostgroup < 0) {
 				if (lock_hostgroup) {
 					// we are locking on hostgroup now
-					locked_on_hostgroup = current_hostgroup;
+					int writer_hostgroup = MyHGM->get_writer_hostgroup();
+					locked_on_hostgroup = writer_hostgroup >= 0 ? writer_hostgroup : default_hostgroup;
+					current_hostgroup = locked_on_hostgroup;
 				}
 			}
 			if (locked_on_hostgroup >= 0) {
@@ -3718,12 +3722,9 @@ __get_pkts_from_client:
 										if (locked_on_hostgroup < 0) {
 											if (lock_hostgroup) {
 												// we are locking on hostgroup now
-												if ( qpo->destination_hostgroup >= 0 ) {
-													if (transaction_persistent_hostgroup == -1) {
-														current_hostgroup=qpo->destination_hostgroup;
-													}
-												}
-												locked_on_hostgroup = current_hostgroup;
+												int writer_hostgroup = MyHGM->get_writer_hostgroup();
+												locked_on_hostgroup = writer_hostgroup >= 0 ? writer_hostgroup : default_hostgroup;
+												current_hostgroup = locked_on_hostgroup;
 												thread->status_variables.stvar[st_var_hostgroup_locked]++;
 												thread->status_variables.stvar[st_var_hostgroup_locked_set_cmds]++;
 											}
@@ -6417,14 +6418,11 @@ __exit_set_destination_hostgroup:
 	if ( qpo->next_query_flagIN >= 0 ) {
 		next_query_flagIN=qpo->next_query_flagIN;
 	}
-	if ( qpo->destination_hostgroup >= 0 ) {
-		if (transaction_persistent_hostgroup == -1) {
-			if ( qpo->ignorable && locked_on_hostgroup >= 0 ) {
-				current_hostgroup = locked_on_hostgroup;
-			} else {
-				current_hostgroup = qpo->destination_hostgroup;
-			}
-		}
+
+	if ( qpo->ignorable && locked_on_hostgroup >= 0 ) {
+		current_hostgroup = locked_on_hostgroup;
+	} else if ( qpo->destination_hostgroup >= 0 ) {
+		current_hostgroup = qpo->destination_hostgroup;
 	}
 
 	if (mysql_thread___set_query_lock_on_hostgroup == 1) { // algorithm introduced in 2.0.6
